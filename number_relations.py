@@ -26,18 +26,18 @@ class RegisteringRelation(Relation):
                 fact(_Number, x)
         Relation.add_fact(self, *inputs)
 
-    @classmethod
-    def gen_facts(cls):
-        x = var()
-        nums = run(0, x, _Number(x))
-        nums = sorted(nums, reverse=True)
-        print('all nums', nums)
-        n = len(nums)
-        for i in range(n):
-            for j in range(i, n):
-                fact(ge, nums[i], nums[j])
-                if (i != j):
-                    fact(lt, nums[j], nums[i])
+    # @classmethod
+    # def gen_facts(cls):
+    #     x = var()
+    #     nums = run(0, x, _Number(x))
+    #     nums = sorted(nums, reverse=True)
+    #     print('all nums', nums)
+    #     n = len(nums)
+    #     for i in range(n):
+    #         for j in range(i, n):
+    #             fact(ge, nums[i], nums[j])
+    #             if (i != j):
+    #                 fact(lt, nums[j], nums[i])
 
 
 class BypassingRelation(RegisteringRelation):
@@ -141,6 +141,9 @@ def lt(x, y):
             else:
                 yield temp_assoc(substitution, oldvar, newvar)
 
+        # print("x:", x)
+        # print("y:", y)
+
         if isvar(x):
             if isvar(y):
                 raise EarlyGoalError('two vars in comparison')
@@ -156,7 +159,7 @@ def lt(x, y):
                 newvar = RangedVar(RealRange([(-np.inf, x)]))
                 yield from apply_constrain(oldvar, newvar)
             elif isinstance(y, Number):
-                if x > y:
+                if x < y:
                     yield substitution
             else:
                 raise EarlyGoalError('Invalid constant type')
@@ -165,59 +168,63 @@ def lt(x, y):
     return goal
 
 
+ge = gt
 
-gt = BypassingRelation(np.greater)
-ge = BypassingRelation(np.greater_equal)
-lt = BypassingRelation(np.less)
-le = BypassingRelation(np.less_equal)
+le = lt
 
-complimentary = Relation()
-facts(complimentary,
-      (ge, lt),
-      (gt, le))
 
-def neg(x, *args):
-    # x = args[0]
-    if isinstance(x, Relation):
-        rel = x
-        nrel = var()
-        ans = run(1, nrel, (complimentary, rel, nrel))
-        if not ans:
-            print('in neg, relation results', run(0, nrel, (rel, *args)))
-            return (neg, rel(*args))
-        else:
-            nrel = ans[0]
-            return (nrel, *args)
-        # return (conde,
-        #         ((complimentary, rel, nrel), (nrel, *args)),
-        #         ()
-    elif isvar(x):
-        raise EarlyGoalError()
-    elif callable(x):
-        f = x
-        try:
-            return (neg, f(*args))
-        except Exception as e:
-            print(e)
-            raise EarlyGoalError(e)
-    elif isinstance(x, tuple):
-        term = x
-        term = evalt(term)
-        return (neg, term, *args)
-    else:
-        return not x
+# gt = BypassingRelation(np.greater)
+# ge = BypassingRelation(np.greater_equal)
+# lt = BypassingRelation(np.less)
+# le = BypassingRelation(np.less_equal)
+
+# complimentary = Relation()
+# facts(complimentary,
+#       (ge, lt),
+#       (gt, le))
+
+# def neg(x, *args):
+#     # x = args[0]
+#     if isinstance(x, Relation):
+#         rel = x
+#         nrel = var()
+#         ans = run(1, nrel, (complimentary, rel, nrel))
+#         if not ans:
+#             print('in neg, relation results', run(0, nrel, (rel, *args)))
+#             return (neg, rel(*args))
+#         else:
+#             nrel = ans[0]
+#             return (nrel, *args)
+#         # return (conde,
+#         #         ((complimentary, rel, nrel), (nrel, *args)),
+#         #         ()
+#     elif isvar(x):
+#         raise EarlyGoalError()
+#     elif callable(x):
+#         f = x
+#         try:
+#             return (neg, f(*args))
+#         except Exception as e:
+#             print(e)
+#             raise EarlyGoalError(e)
+#     elif isinstance(x, tuple):
+#         term = x
+#         term = evalt(term)
+#         return (neg, term, *args)
+#     else:
+#         return not x
 
 class NumberVar(Var):
     def __new__(cls, *token):
         obj = Var(*token)
         return obj
 
-def Number(x):
-    fact(_Number)
-    if isinstance(x, Var):
-        return (NumberVar, x)
-    else:
-        return isinstance(x, numbers.Number)
+# def Number(x):
+#     fact(_Number)
+#     if isinstance(x, Var):
+#         return (NumberVar, x)
+#     else:
+#         return isinstance(x, numbers.Number)
 
 # fact(Number, x)
 

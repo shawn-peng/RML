@@ -1,4 +1,6 @@
 
+from toolz import assoc
+
 class temp_dict:
     def __init__(self, dict, k, v):
         self.k = k
@@ -25,9 +27,16 @@ class temp_dict:
         return "temp_dict: { %s: %s ; "%(self.k, self.v) + str(self.dict) + " }"
         # return str(dict(self))
 
+    def merge(self):
+        if isinstance(self.dict, temp_dict):
+            self.dict.merge()
+        self.dict[self.k] = self.v
+        return self.dict
+
 
 
 
 
 def temp_assoc(d, k, v):
-    return temp_dict(d, k, v)
+    # return temp_dict(d, k, v)
+    return assoc(d, k, v)

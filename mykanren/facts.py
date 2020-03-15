@@ -70,7 +70,7 @@ class Relation(object):
         return goal
 
     def __str__(self):
-        return "Rel: " + self.name
+        return "<Rel: " + self.name + ">"
 
     __repr__ = __str__
 

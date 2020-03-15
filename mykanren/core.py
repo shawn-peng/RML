@@ -216,8 +216,18 @@ def conda(*goalseqs):
     # return success
     def goal(s):
         for gs in goalseqs:
-            # print(gs)
+            if len(gs) == 1:
+                print(gs)
+                g = gs[0]
+                evaled_g = goaleval(reify(g, s))
+                print(evaled_g)
+                new_s = Stream(evaled_g(s))
+                if not new_s.empty():
+                    return new_s
+
             g, rgs = gs
+            print(g, rgs)
+            print('reify', s, reify(g, s))
             evaled_g = goaleval(reify(g, s))
             print(evaled_g)
             new_s = Stream(evaled_g(s))

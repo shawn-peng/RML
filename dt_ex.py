@@ -4,7 +4,7 @@ from mykanren.util import evalt
 
 from functools import partial
 
-from number_relations import RegisteringRelation, BypassingRelation, ge, lt, neg
+from number_relations import RegisteringRelation, BypassingRelation, ge, lt#, neg
 
 parent = Relation()
 
@@ -52,6 +52,7 @@ print(run(0, (x,y), eq(pattern, expr)))        # prints ((3, 2),) meaning
 Tree_Root = Relation()
 Tree_Node_LChild = Relation()
 Tree_Node_RChild = Relation()
+Tree_Leaf = Relation()
 
 facts(Tree_Node_LChild,
       ('a', 'b'),
@@ -92,10 +93,12 @@ Number = Relation()
 
 def Decision_Node(dnode, test, tnode, fnode):
     # test1, test2, tnode1, tnode2, fnode1, fnode2 = vars(6)
-    ans = var()
+    # ans = var()
     # print(dnode)
     return conde(
-        ((Decision_Answer_Node, dnode, ans), eq(test, None), eq(tnode, None), eq(fnode, None),),
+        # ((Decision_Answer_Node, dnode, ans), eq(test, None), eq(tnode, None), eq(fnode, None),),
+        # ((Decision_Answer_Node, dnode, ans), ),
+        ((Tree_Leaf, dnode), ),
         # (Tree_Node_LChild(dnode, tnode), Tree_Node_RChild(dnode, fnode), Test(test), Decision_Node_Test(dnode, test),
         #  Decision_Node(tnode,test1,tnode1,fnode1), Decision_Node(fnode,test2,tnode2,fnode2),),
         # (Tree_Node_LChild(dnode, tnode), Tree_Node_RChild(dnode, fnode), Decision_Node_Test(dnode, test),),
@@ -155,7 +158,8 @@ def age_lt(x, y):
 # x, y = vars(2)
 # x = var()
 facts(Decision_Node_Test,
-      ('a', lambda x : age_ge(x, 18))
+      ('a', (lambda x: (age_ge, x, 18)))
+      # ('a', lambda x : age_ge(x, 18))
 )
 
 facts(Decision_Answer_Node,
@@ -181,7 +185,7 @@ facts(age,
       ('tom', 10),
       ('daniel', 20))
 
-RegisteringRelation.gen_facts()
+# RegisteringRelation.gen_facts()
 
 Example = Relation()
 facts(Example,
@@ -198,17 +202,18 @@ a,b,c,d = vars(4)
 # print(run(0, (a,b,c,d), Decision_Node(a,b,c,d)))
 # print(run(0, (a, b), Decision_Tree_Root(a, b)))
 # print(run(0, a, (age, a, 20)))
+# print(run(0, a, (age_lt, a, 20)))
 # print('age = 18 or 20', run(0, (a,b), (conda,
 #                                    ((age, a, 21), (age, a, b)),
 #                                    ((age, a, 18), (age, a, b))
 #                                    )))
-# print(run(0, (ex, ans), Example(ex), Decision_Tree_Answer('dt1', ex, ans)))
+print(run(0, (ex, ans), Example(ex), Decision_Tree_Answer('dt1', ex, ans)))
 # print(run(1, (a, b, c), Decision_Node_Answer(a, b, c)))
-test = run(0, (a, b), (Decision_Node, 'a', a, var(), var()))[0][0]
-print('node test', test)
-print('pass goal', test(b))
+# test = run(0, (a, b), (Decision_Node, 'a', a, var(), var()))[0][0]
+# print('node test', test)
+# print('pass goal', test(b))
 # print('pass eg', run(0, (b), (test(b)),))
-print(run(0, (a), (conde, ((age, a, b), (ge, b, 18)))))
+# print(run(0, (a), (conde, ((age, a, b), (ge, b, 18)))))
 
 # x,y,z = vars(3)
 # print(run(0, x, ge(x)))

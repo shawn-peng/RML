@@ -62,6 +62,7 @@ def interleave(seqs, pass_exceptions=()):
 
 
 def take(n, seq):
+    # print(tuple(seq))
     if n is None:
         return seq
     if n == 0:
