@@ -3,6 +3,15 @@ from unification import unify, reify
 from .util import intersection
 from toolz import merge
 
+from collections import defaultdict
+
+# class _recursive_enumerate(object):
+# def _recursive_enumerate(iter, ):
+#     i = 0
+#     for it in iter:
+#         if isinstance(it, tuple):
+
+
 
 class Relation(object):
     _id = 0
@@ -14,6 +23,7 @@ class Relation(object):
             name = "_%d" % Relation._id
             Relation._id += 1
         self.name = name
+        self.value_collections = []
 
     def add_fact(self, *inputs):
         """ Add a fact to the knowledgebase.
@@ -27,9 +37,17 @@ class Relation(object):
         self.facts.add(fact)
 
         for key in enumerate(inputs):
+            if len(self.value_collections) <= key[0]:
+                self.value_collections.append(set())
+            self.value_collections[key[0]].add(key[1])
             if key not in self.index:
                 self.index[key] = set()
             self.index[key].add(fact)
+
+    def get_values(self, argpos):
+        if argpos >= len(self.value_collections):
+            return []
+        return self.value_collections[argpos]
 
     def __call__(self, *args):
         """ Returns an evaluated (callable) goal, which returns a list of

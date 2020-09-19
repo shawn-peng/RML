@@ -94,10 +94,18 @@ class BypassingRelation(RegisteringRelation):
 # _ge = lor(gt, eq)
 # _le = lor(lt, eq)
 
-def gt(x, y):
+class NumOrderRelation(Relation):
+    def __init__(self, funcrel, name=None):
+        Relation.__init__(self, name)
+        self.funcrel = funcrel
+    def __call__(self, x, y):
+        return self.funcrel(x, y)
+
+def _gt(x, y):
     # def range_gt(u):
     #     return
     def goal(substitution):
+        newx, newy = reify((x, y), substitution)
         def apply_constrain(oldvar, newvar):
             if hasrange(oldvar):
                 newvar = RangedVar.new_from_intersection(oldvar, newvar)
@@ -106,22 +114,22 @@ def gt(x, y):
             else:
                 yield temp_assoc(substitution, oldvar, newvar)
 
-        if isvar(x):
-            if isvar(y):
+        if isvar(newx):
+            if isvar(newy):
                 raise EarlyGoalError('two vars in comparison')
-            elif isinstance(y, Number):
-                oldvar = x
-                newvar = RangedVar(RealRange([(y, np.inf)]))
+            elif isinstance(newy, Number):
+                oldvar = newx
+                newvar = RangedVar(RealRange([(newy, np.inf)]))
                 yield from apply_constrain(oldvar, newvar)
             else:
                 raise EarlyGoalError('Invalid constant type')
-        elif isinstance(x, Number):
-            if isvar(y):
-                oldvar = y
-                newvar = RangedVar(RealRange([(-np.inf, x)]))
+        elif isinstance(newx, Number):
+            if isvar(newy):
+                oldvar = newy
+                newvar = RangedVar(RealRange([(-np.inf, newx)]))
                 yield from apply_constrain(oldvar, newvar)
-            elif isinstance(y, Number):
-                if x > y:
+            elif isinstance(newy, Number):
+                if newx > newy:
                     yield substitution
             else:
                 raise EarlyGoalError('Invalid constant type')
@@ -129,10 +137,13 @@ def gt(x, y):
             raise EarlyGoalError('Invalid constant type')
     return goal
 
-def lt(x, y):
+def _lt(x, y):
     # def range_gt(u):
     #     return
     def goal(substitution):
+        newx, newy = reify((x, y), substitution)
+        # merge constrains of 2 vars, add mapping from old var to new var
+        # new var has intersection range
         def apply_constrain(oldvar, newvar):
             if hasrange(oldvar):
                 newvar = RangedVar.new_from_intersection(oldvar, newvar)
@@ -144,22 +155,22 @@ def lt(x, y):
         # print("x:", x)
         # print("y:", y)
 
-        if isvar(x):
-            if isvar(y):
+        if isvar(newx):
+            if isvar(newy):
                 raise EarlyGoalError('two vars in comparison')
-            elif isinstance(y, Number):
-                oldvar = x
-                newvar = RangedVar(RealRange([(y, np.inf)]))
+            elif isinstance(newy, Number):
+                oldvar = newx
+                newvar = RangedVar(RealRange([(newy, np.inf)]))
                 yield from apply_constrain(oldvar, newvar)
             else:
                 raise EarlyGoalError('Invalid constant type')
-        elif isinstance(x, Number):
-            if isvar(y):
-                oldvar = y
-                newvar = RangedVar(RealRange([(-np.inf, x)]))
+        elif isinstance(newx, Number):
+            if isvar(newy):
+                oldvar = newy
+                newvar = RangedVar(RealRange([(-np.inf, newx)]))
                 yield from apply_constrain(oldvar, newvar)
-            elif isinstance(y, Number):
-                if x < y:
+            elif isinstance(newy, Number):
+                if newx < newy:
                     yield substitution
             else:
                 raise EarlyGoalError('Invalid constant type')
@@ -167,11 +178,12 @@ def lt(x, y):
             raise EarlyGoalError('Invalid constant type')
     return goal
 
+gt = NumOrderRelation(_gt, 'gt')
+lt = NumOrderRelation(_lt, 'gt')
 
 ge = gt
 
 le = lt
-
 
 # gt = BypassingRelation(np.greater)
 # ge = BypassingRelation(np.greater_equal)
@@ -227,6 +239,10 @@ class NumberVar(Var):
 #         return isinstance(x, numbers.Number)
 
 # fact(Number, x)
+
+def count(x, n):
+    def goal(s):
+        pass
 
 
 

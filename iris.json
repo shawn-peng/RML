@@ -1,4 +1,5 @@
 {
   "proj_dir": "data/iris/",
-  "target": "iris_setosa"
+  "target": "iris_setosa",
+  "num_splits": 2
 }

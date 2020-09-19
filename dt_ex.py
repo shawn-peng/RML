@@ -1,10 +1,7 @@
-from mykanren import run, eq, membero, var, vars, conde, unify, conda
-from mykanren import Relation, fact, facts, unifiable
-from mykanren.util import evalt
+from mykanren import run, eq, var, vars, conde
+from mykanren import Relation, fact, facts
 
-from functools import partial
-
-from number_relations import RegisteringRelation, BypassingRelation, ge, lt#, neg
+from numsys.number_relations import RegisteringRelation, ge, lt#, neg
 
 parent = Relation()
 
@@ -48,11 +45,9 @@ print(run(0, (x,y), eq(pattern, expr)))        # prints ((3, 2),) meaning
                                                #   x matches to 3
                                                #   y matches to 2
 
-# Tree_Parent = Relation()
-Tree_Root = Relation()
-Tree_Node_LChild = Relation()
-Tree_Node_RChild = Relation()
-Tree_Leaf = Relation()
+# ================================================================================
+from dt import Tree_Root, Tree_Node_LChild, Tree_Node_RChild, Decision_Answer_Node, Decision_Node_Test, \
+    Decision_Tree_Answer
 
 facts(Tree_Node_LChild,
       ('a', 'b'),
@@ -61,18 +56,8 @@ facts(Tree_Node_RChild,
       ('a', 'c'),
       ('b', 'e'))
 
-def Tree_Node_Child(node, cnode):
-    return conde(
-        (Tree_Node_LChild(node, cnode),),
-        (Tree_Node_RChild(node, cnode),)
-    )
-
-def Tree_Node_Parent(node, pnode):
-    return Tree_Node_Child(pnode, node)
-
 # print(run(0, (x,y), Tree_Node_Parent(x, y)))
 # print(run(0, (x,y), Tree_Node_LChild(x, y)))
-
 
 # Test = Relation()
 # Test takes an example as input and return a bool value as output
@@ -80,68 +65,11 @@ def Tree_Node_Parent(node, pnode):
     # return conde((True,))
     # return callable(test)
 
-Decision_Node_Test = Relation()
-Decision_Tree_Root = Relation()
-
-Decision_Answer_Node = Relation()
-
-Number = Relation()
+#Number = Relation()
 
 # def Decision_Node_Test(dnode, test):
     # minimize(test, SplitCost(dnode))
     # ArgMax(test, SplitGain(dnode, test))
-
-def Decision_Node(dnode, test, tnode, fnode):
-    # test1, test2, tnode1, tnode2, fnode1, fnode2 = vars(6)
-    # ans = var()
-    # print(dnode)
-    return conde(
-        # ((Decision_Answer_Node, dnode, ans), eq(test, None), eq(tnode, None), eq(fnode, None),),
-        # ((Decision_Answer_Node, dnode, ans), ),
-        ((Tree_Leaf, dnode), ),
-        # (Tree_Node_LChild(dnode, tnode), Tree_Node_RChild(dnode, fnode), Test(test), Decision_Node_Test(dnode, test),
-        #  Decision_Node(tnode,test1,tnode1,fnode1), Decision_Node(fnode,test2,tnode2,fnode2),),
-        # (Tree_Node_LChild(dnode, tnode), Tree_Node_RChild(dnode, fnode), Decision_Node_Test(dnode, test),),
-        ((Tree_Node_LChild, dnode, tnode), (Tree_Node_RChild, dnode, fnode), (Decision_Node_Test, dnode, test),),
-    )
-
-def Decision_Node_Answer(dnode, example, answer):
-    # test = unifiable(Test)
-    test = var()
-    tnode = var()
-    fnode = var()
-
-    # return conde(
-    #     # (Decision_Answer_Node(dnode, answer), (unify, test, example), )
-    #     # ((Decision_Answer_Node, dnode, answer), (unify, test, example), )
-    #     ((Decision_Answer_Node, dnode, answer),)
-    # )
-    # return conde(
-    #     (Decision_Answer_Node(dnode, answer), unify(example, var())),
-    #     (Decision_Node(dnode, test, tnode, fnode),
-    #      conde(
-    #         (True, Decision_Node_Answer(tnode,example,answer), ),
-    #         (Decision_Node_Answer(fnode,example,answer), )
-    #      ), )
-    # )
-    return conde(
-        ((Decision_Answer_Node, dnode, answer), ),
-        ((Decision_Node, dnode, test, tnode, fnode),
-         conda(
-            ((test, example), (Decision_Node_Answer, tnode, example, answer), ),
-            ((Decision_Node_Answer, fnode, example, answer), )
-         ), )
-    )
-    # ans = run(1, example, test(example))
-
-def Test_Pass(test, example):
-    return test(example)
-def Test_Fail(test, example):
-    return
-
-def Decision_Tree_Answer(dtree, example, answer):
-    root = var()
-    return conde((Decision_Tree_Root(dtree, root), Decision_Node_Answer(root, example, answer),))
 
 
 age = RegisteringRelation()
@@ -168,7 +96,7 @@ facts(Decision_Answer_Node,
 
 #facts(Decision_Node)
 
-fact(Decision_Tree_Root, 'dt1', 'a')
+fact(Tree_Root, 'dt1', 'a')
 
 # from collections import namedtuple
 # ValExample = namedtuple('ValExample', ['val'])
