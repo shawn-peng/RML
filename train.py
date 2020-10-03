@@ -10,7 +10,7 @@ from parse_modes import parse_modes
 
 from numsys.number_relations import gt, lt
 
-from precomputing import *
+#from precomputing import *
 
 
 class Config:
@@ -56,9 +56,9 @@ relations.update(common_rels)
 # model_conf = {}
 
 sys.path.append(proj_dir)
-import precomputes
+#import precomputes
 
-precomp_rels = precompute(proj_dir + 'precomputes.py', relations)
+#precomp_rels = precompute(proj_dir + 'precomputes.py', relations)
 
 # tree = learn_tree(relations, conf['target'], modes)
 model = BoostingTreesModel(relations, pos_rel, neg_rel, conf)
