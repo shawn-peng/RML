@@ -6,21 +6,29 @@ def precompute(precomp_rule_f, fact_rels):
     # print(precomp_rules)
     # print(eval("".join(precomp_rules)))
     # __import__()
-    _locals = locals()
+    _locals = globals()
+    _locals.update(locals())
     new_fact_rels = {}
     for relname, rel in fact_rels.items():
         print('defining relation', relname, 'to _locals')
         # exec('%s = Relation()' % relname, globals(), _locals)
         exec('%s = fact_rels["%s"]' % (relname, relname), globals(), _locals)
-        eval('print(%s)' % relname, globals(), _locals)
-    exec(open(precomp_rule_f).read(), globals(), _locals)
+        eval('print(%s)' % relname, _locals)
+    exec(open(precomp_rule_f).read(), _locals)
     # return new_fact_rels
     # return fact_rels
     return _locals['fact_rels']
 
-# def count
+def count_binding_set(args, goals, fact_rels):
+    print(friends.facts)
+    bs = run(0, args, *goals)
+    print('binding set', bs)
+    return len(bs)
 
 def func2facts(rel_func, args_list, fact_rels):
+    rel = rel_func.__name__
+    if rel not in fact_rels:
+        fact_rels[rel] = Relation(rel)
     for args in args_list:
         ret = rel_func(*args)
-        fact_rels[rel_func.name].add_fact(*ret)
+        fact_rels[rel].add_fact(ret)

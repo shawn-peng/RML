@@ -10,11 +10,11 @@ print(fact_rels)
 def num_of_smoking_friends(x):
     z = var()
     # return (countUniqueBindings, z, ((friends,x,z), (smokes, z)), n)
-    return countUniqueBindings(z, ((friends,x,z), (smokes,z)))
+    return count_binding_set(z, ((friends,x,z), (smokes,z)), fact_rels)
 
 x = var()
 n = var()
-print(locals())
+#print(locals())
 # args_list = [(_x, print(locals())) for _x in run(0, x, (friends, x, var()))]
 args_list = []
 for _x in friends.get_values(1):
