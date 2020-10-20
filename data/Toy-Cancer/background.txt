@@ -1,0 +1,17 @@
+
+mode: friends(+Person, -Person).
+mode: friends(-Person, +Person).
+
+mode: smokes(+Person).
+
+mode: cancer(+Person).
+mode: count(+Person).
+bridger: friends/2.
+
+
+num_of_smoking_friends(x, n) :-
+   countUniqueBindings((friends(x,z)^smokes(z)), n).
+
+mode: num_of_smoking_friends(+Person, #Number).
+
+
