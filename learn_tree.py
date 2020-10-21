@@ -30,6 +30,7 @@ class BoostingTreesModel:
         self.rels = rels
         self.target = config.target
         self.split_times = config.split_times
+        self.node_size = config.node_size
         self.modes = config.modes
 
         self.pos_rels = pos
@@ -290,34 +291,47 @@ class BoostingTreesModel:
             test = None
             lex = None
             rex = None
-            for rel, arg_types in modes:
-                if rel not in relations:
-                    continue
-                rel = relations[rel]
-                print('try relation', rel)
-                print('mode', arg_types)
-                argss = self._get_args(arg_types, typed_vars)
-                argss = list(argss)
-                print('argss', argss)
-                for args in argss:
-                    test = (rel, args)
-                    print('args', args)
-                    #node_ex_ss = self.get_node_ex_subs(node)
-                    #s,lex,rex = self.score_test(test, node_ex_ss)
-                    s,lex,rex = self.try_test(node, test, examples)
-                    print('score', s)
-                    choice = (s, node, arg_types, typed_vars, test, examples, lex, rex)
-                    # if s == 0:
-                    #     continue
-                    # elif s < best_score:
-                    if s < best_score:
-                        print('update bests')
-                        best_score = s
-                        bests = [choice]
-                    elif s == best_score:
-                        print('appending choice')
-                        bests.append(choice)
-                    print(bests)
+
+            def _enum_splits(node_size, prefix_rels):
+                if node_size == 0:
+                    yield prefix_rels
+                else:
+                    for relname, arg_types in modes:
+                        if relname not in relations:
+                            continue
+                        rel = relations[relname]
+
+                        argss = self._get_args(arg_types, typed_vars)
+                        argss = list(argss)
+                        print('argss', argss)
+                        for args in argss:
+                            yield from _enum_splits(node_size-1, prefix_rels + [((relname, arg_types), (rel, args))])
+
+            def _gen_splits():
+                for node_size in range(1, self.node_size+1):
+                    yield from _enum_splits(node_size, [])
+
+            for split in _gen_splits():
+            # for rel, arg_types in modes:
+            #     print('try relation', rel)
+            #     print('mode', arg_types)
+                arg_types, test = zip(*split)
+                print('try test', test)
+
+                s,lex,rex = self.try_test(node, test, examples)
+                print('score', s)
+                choice = (s, node, typed_vars, arg_types, test, examples, lex, rex)
+                # if s == 0:
+                #     continue
+                # elif s < best_score:
+                if s < best_score:
+                    print('update bests')
+                    best_score = s
+                    bests = [choice]
+                elif s == best_score:
+                    print('appending choice')
+                    bests.append(choice)
+                print(bests)
             # if not bests or bests[0][0] >= score:
             #     print('no valuable test')
             #     #set as leaf node
@@ -331,10 +345,9 @@ class BoostingTreesModel:
 
         # test: (rel, args: var instances)
         # arg_types: type for each arg var
-        def split_node(node, arg_types, typed_vars, test, examples, lex, rex):
+        def split_node(node, typed_vars, arg_types, test, examples, lex, rex):
             # Decision_Node_Test(node, test)
             fact(Decision_Node_Test, node, test)
-            rel, args = test
 
             # typed_vars = defaultdict(list)
             # typed_vars.update(typed_vars) #make a shallow copy
@@ -345,11 +358,13 @@ class BoostingTreesModel:
                 #     typed_vars[typename] = [var]
                 typed_vars[typename] = typed_vars[typename] + [var] #build new list
 
-            for i, arg in enumerate(args):
-                guide, typename = arg_types[i]
-                print(i, arg, guide, typename)
-                if guide == '-':
-                    _add_var(typename, arg)
+            # add new vars
+            for rel, args in test:
+                for i, arg in enumerate(args):
+                    guide, typename = arg_types[i]
+                    print(i, arg, guide, typename)
+                    if guide == '-':
+                        _add_var(typename, arg)
 
             l = self._new_node_id(treeid)
             fact(Tree_Node_LChild, node, l)

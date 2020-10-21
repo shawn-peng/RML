@@ -27,7 +27,7 @@ class Config:
         self.target = conf['target']
         self.split_times = conf['num_splits']
         self.precomputing = conf['precomputing'] if 'precomputing' in conf else False
-        self.nodesize = conf['nodesize'] if 'nodesize' in conf else 1
+        self.node_size = conf['node_size'] if 'node_size' in conf else 1
         self.modes = modes
 
 
