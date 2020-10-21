@@ -3,7 +3,7 @@ from dt import Tree_Root, Tree_Leaf, Tree_Node_Child, Tree_Node_LChild, Tree_Nod
     Decision_Node, Decision_Answer_Node, Decision_Node_Test, Decision_Node_Answer, Decision_Tree_Answer, \
     Decision_Node_Example, Decision_Node_Positive, Decision_Node_Negative
 
-from mykanren import var, Relation, run, fact, facts, lall, lany, reify, Stream
+from mykanren import var, Relation, run, fact, facts, conde, conda, lall, lany, reify, Stream
 
 from collections import defaultdict
 import itertools
@@ -129,7 +129,7 @@ class BoostingTreesModel:
     #     return g({})
 
     def try_test(self, node, test, examples):
-        rel, args = test
+        # rel, args = test
 
         left = []
         right = []
@@ -137,7 +137,9 @@ class BoostingTreesModel:
         # examples = self.get_node_ex_subs(Decision_Node_Example, node)
         #examples = run(1, examples, Decision_Node_Example(node, examples))[0]
 
-        g = rel(*args)
+        # g = rel(*args)
+        g = lall(*(rel(*args) for rel, args in test)) # rel(*args) return a goal, lall combine all goals and return a new goal
+
         for s in examples:
             newss = Stream(g(s))
             if not newss.empty():
@@ -196,6 +198,7 @@ class BoostingTreesModel:
         print('weighted avg score', score)
 
         return (score, (left, (lpos, lneg)), (right, (rpos, rneg)))
+
 
     # def calc_node_score(self, node):
     #     pass
@@ -345,7 +348,7 @@ class BoostingTreesModel:
 
         # test: (rel, args: var instances)
         # arg_types: type for each arg var
-        def split_node(node, typed_vars, arg_types, test, examples, lex, rex):
+        def split_node(node, typed_vars, modes, test, examples, lex, rex):
             # Decision_Node_Test(node, test)
             fact(Decision_Node_Test, node, test)
 
@@ -358,8 +361,10 @@ class BoostingTreesModel:
                 #     typed_vars[typename] = [var]
                 typed_vars[typename] = typed_vars[typename] + [var] #build new list
 
+            # relname, arg_types = modes
+
             # add new vars
-            for rel, args in test:
+            for (relname, arg_types), (rel, args) in zip(modes, test):
                 for i, arg in enumerate(args):
                     guide, typename = arg_types[i]
                     print(i, arg, guide, typename)
@@ -413,7 +418,6 @@ class BoostingTreesModel:
             score, *expand = heapq.heappop(expanding)
             node, arg_types, typed_vars, test, examples, lex, rex = expand
             self.make_answer_node(node, examples)
-
 
         return treeid
 

@@ -68,7 +68,7 @@ if conf.precomputing:
     # print('num smoking friends', relations['num_of_smoking_friends'].facts)
 
 # tree = learn_tree(relations, conf['target'], modes)
-model = BoostingTreesModel(precomp_rels, pos_rel, neg_rel, conf)
+model = BoostingTreesModel(relations, pos_rel, neg_rel, conf)
 tree = model.learn_tree()
 model.output_dot_tree('classification_tree')
 
