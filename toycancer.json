@@ -1,5 +1,5 @@
 {
   "proj_dir": "data/Toy-Cancer/",
   "target": "cancer",
-  "num_splits": 5
+  "num_splits": 20
 }

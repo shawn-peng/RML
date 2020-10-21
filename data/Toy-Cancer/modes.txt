@@ -1,10 +1,11 @@
-iris_setosa(+obj_id).
-// iris_versicolor(+obj_id).
-// iris_virginica(+obj_id).
+friends(+Person, -Person).
+friends(-Person, +Person).
 
-sl(+obj_id, -n).
-sw(+obj_id, -n).
-pl(+obj_id, -n).
-pw(+obj_id, -n).
+smokes(+Person).
+
+cancer(+Person).
+// count(+Person).
 
 gt(+n, #n).
+
+num_of_smoking_friends(+Person, -n).
