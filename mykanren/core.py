@@ -83,6 +83,7 @@ def lall(*goals):
     >>> run(0, x, lall(membero(x, (1,2,3)), membero(x, (2,3,4))))
     (2, 3)
     """
+    return lambda s: lallgreedy(*tuple(earlyorder(*goals)))(s)
     return (lallgreedy, ) + tuple(earlyorder(*goals))
 
 
