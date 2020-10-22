@@ -10,4 +10,3 @@ pw(+obj_id, -n).
 gt(+n, #n).
 lt(+n, #n).
 
-iris_setosa(~Var_obj_id_0).
