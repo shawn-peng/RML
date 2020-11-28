@@ -1,0 +1,3 @@
+[submodule "tensorkanren"]
+	path = tensorkanren
+	url = git@github.com:shawn-peng/tensorkanren.git
