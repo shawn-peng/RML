@@ -2,14 +2,33 @@ import numpy as np
 
 #from number_relations import *
 
-class Anything:
-    pass
+class ValueSet:
+    def __init__(self):
+        pass
 
-class Everything:
-    pass
+class DiscreteSet(ValueSet):
+    def __init__(self):
+        super().__init__()
+        pass
 
-class RealSimpleRange:
+class CategorySet(DiscreteSet):
+    def __init__(self):
+        super().__init__()
+        pass
+
+class IDSet(DiscreteSet):
+    def __init__(self):
+        super().__init__()
+        pass
+
+class IntSet(DiscreteSet):
+    def __init__(self):
+        super().__init__()
+        pass
+
+class RealSimpleRange(ValueSet):
     def __init__(self, lo=-np.inf, hi=np.inf):
+        super().__init__()
         self.lo = lo
         # self.includelo = includelo
         self.hi = hi
@@ -44,12 +63,10 @@ class RealSimpleRange:
     __repr__ = __str__
 
 
-
-
-
-class RealRange:
+class RealRange(ValueSet):
     # def __init__(self, lo=-np.inf, hi=np.inf, includelo=True, includehi=False):
     def __init__(self, itv_list=None):
+        super().__init__()
         if itv_list is None:
             self.intervals = [RealSimpleRange()]
             return

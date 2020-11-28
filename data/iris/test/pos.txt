@@ -1,0 +1,15 @@
+iris_virginica("o135").
+iris_setosa("o13").
+iris_versicolor("o55").
+iris_versicolor("o61").
+iris_versicolor("o85").
+iris_versicolor("o84").
+iris_virginica("o132").
+iris_versicolor("o66").
+iris_virginica("o122").
+iris_virginica("o111").
+iris_versicolor("o54").
+iris_virginica("o116").
+iris_setosa("o9").
+iris_setosa("o23").
+iris_setosa("o7").

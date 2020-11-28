@@ -1,0 +1,44 @@
+
+//Parameters
+setParam: maxTreeDepth=3.
+setParam: nodeSize=2.
+setParam: numOfClauses=10.
+//setParam: sampleByResidue=True.
+setParam: lineSearch=True.
+
+//Modes
+mode: iris_setosa(+obj_id).
+mode: iris_versicolor(+obj_id).
+mode: iris_virginica(+obj_id).
+
+mode: sl(+obj_id, -n).
+mode: sw(+obj_id, -n).
+mode: pl(+obj_id, -n).
+mode: pw(+obj_id, -n).
+mode: mygt(+n, #thrs).
+
+//mode: sl(+obj_id, -sll).
+//mode: mygt(+sll, #sl_thrs).
+
+//mode: sw(+obj_id, -swl).
+//mode: mygt(+swl, #sw_thrs).
+
+//mode: pl(+obj_id, -pll).
+//mode: mygt(+pll, #pl_thrs).
+
+//mode: pw(+obj_id, -pwl).
+//mode: mygt(+pwl, #pw_thrs).
+
+//Bridgers
+//bridger: ppi/2.
+
+//usePrologVariables: true
+precompute:
+//higher_expr_level(Geneid, Region, Period, Level) :- expr_level(Geneid, Region, Period, L), expr_level(_, _, _, Level), L >= Level.
+mygt(A, B) :- sl(_, A), sl(_, B), A >= B.
+mygt(A, B) :- sw(_, A), sw(_, B), A >= B.
+mygt(A, B) :- pl(_, A), pl(_, B), A >= B.
+mygt(A, B) :- pw(_, A), pw(_, B), A >= B.
+
+//disc: taxableincome([2], [2]).
+

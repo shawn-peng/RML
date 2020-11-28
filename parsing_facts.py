@@ -1,5 +1,6 @@
 from mykanren import run, eq, membero, var, conde
-from mykanren import Relation, facts
+# from mykanren import Relation, facts
+from tensorkanren import Relation, facts
 
 import re
 import numpy as np
@@ -27,8 +28,9 @@ def parse_fact(line):
     args = parse_tuple(args)
     return (rel, *args)
 
-def parse_facts(factsfile):
-    fact_relations = {}
+def parse_facts(factsfile, rel_types, fact_relations = None):
+    if fact_relations is None:
+        fact_relations = {}
     for line in factsfile:
         line = line.rstrip()
         if not line:
@@ -39,7 +41,7 @@ def parse_facts(factsfile):
         # args = tuple(args)
         # print(args)
         if rel not in fact_relations:
-            fact_relations[rel] = Relation(rel)
+            fact_relations[rel] = Relation(rel_types[rel], rel)
         rel = fact_relations[rel]
         # print(rel)
         rel.add_fact(*args)

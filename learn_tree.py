@@ -4,6 +4,8 @@ from dt import Tree_Root, Tree_Leaf, Tree_Node_Child, Tree_Node_LChild, Tree_Nod
     Decision_Node_Example, Decision_Node_Positive, Decision_Node_Negative
 
 from mykanren import var, Relation, run, fact, facts, lall, lany, reify, Stream
+from tensorkanren.variable import TypedVar
+from tensorkanren.types import VarType
 
 from collections import defaultdict
 import itertools
@@ -46,7 +48,7 @@ class BoostingTreesModel:
                 self._add_target_vars(arg_types)
                 # self.target_argtypes = (typename for guide, typename in arg_types)
                 self.target_argtypes = arg_types
-                del mode
+                del mode # remove target mode
                 self.target_args = next(self._get_args(arg_types, self.target_typed_vars))
                 print('target_args', (self.target_args))
                 break
@@ -54,8 +56,10 @@ class BoostingTreesModel:
         self.pos_goal = self.pos_rels[self.target](*self.target_args)
         self.neg_goal = self.neg_rels[self.target](*self.target_args)
 
-        self.examples = self.get_examples(self.pos_rels, self.target)
-        self.examples += self.get_examples(self.neg_rels, self.target)
+        self.pos_examples = self.get_examples(self.pos_rels, self.target)
+        self.neg_examples = self.get_examples(self.neg_rels, self.target)
+        self.examples = self.pos_examples | self.neg_examples
+        # self.examples = self.get_all_examples() # substitution for all examples
         print('examples', self.examples)
 
     tree_counts = defaultdict(int)
@@ -73,7 +77,7 @@ class BoostingTreesModel:
     def _add_target_vars(self, arg_types):
         for guide, typename in arg_types:
             newvar = 'Var_' + typename + '_' + str(len(self.target_typed_vars[typename]))
-            newvar = var(newvar)
+            newvar = TypedVar(VarType.get_type(typename), newvar)
             self.target_typed_vars[typename].append(newvar)
 
     # def _add_var(self, typename, var, typed_vars):
@@ -114,7 +118,13 @@ class BoostingTreesModel:
         # l = run(0, x, example_set[target](x))
         # return l
         g = example_set[target](*self.target_args)
-        return list(g({}))
+        exsub = g({})
+        ex = exsub.get_var_values(*self.target_args)
+        print(ex)
+        return exsub
+
+    # def get_all_examples(self):
+    #     g =
 
     # def get_node_examples(self, node):
     #     x = var()
@@ -137,56 +147,72 @@ class BoostingTreesModel:
         #examples = run(1, examples, Decision_Node_Example(node, examples))[0]
 
         g = rel(*args)
-        for s in examples:
-            newss = Stream(g(s))
-            if not newss.empty():
-                left.append(next(newss))
-            else:
-                right.append(s)
+        # for s in examples:
+        #     newss = Stream(g(s))
+        #     if not newss.empty():
+        #         left.append(next(newss))
+        #     else:
+        #         right.append(s)
+        left = g(examples)
+        right = examples.filter(self.target_args, ~left.reduce_to(*self.target_args)) # right has fewer args because those args fail to unify
 
         print('left', left)
         print('right', right)
 
-        lpos = []
-        lneg = []
-        lunknown = []
-        for s in left:
-            pos_ss = self.pos_goal(s)
-            neg_ss = self.neg_goal(s)
-            if next(pos_ss, None):
-                lpos.append(s)
-            elif next(neg_ss, None):
-                lneg.append(s)
-            else:
-                lunknown.append(s)
+        nl = left.reduce_to(op=np.sum)
+        nr = right.reduce_to(op=np.sum)
 
-        print('lpos', len(lpos), lpos)
-        print('lneg', len(lneg), lneg)
-        print('lunknown', lunknown)
+        # lpos = []
+        # lneg = []
+        # lunknown = []
+        #
+        # for s in left:
+        #     pos_ss = self.pos_goal(s)
+        #     neg_ss = self.neg_goal(s)
+        #     if next(pos_ss, None):
+        #         lpos.append(s)
+        #     elif next(neg_ss, None):
+        #         lneg.append(s)
+        #     else:
+        #         lunknown.append(s)
 
-        rpos = []
-        rneg = []
-        runknown = []
-        for s in right:
-            pos_ss = self.pos_goal(s)
-            neg_ss = self.neg_goal(s)
-            if next((s for s in pos_ss), None):
-                rpos.append(s)
-            elif next((s for s in neg_ss), None):
-                rneg.append(s)
-            else:
-                runknown.append(s)
+        lpos = self.pos_goal(left)
+        lneg = self.neg_goal(left)
+
+        nlpos = lpos.reduce_to(op=np.sum)
+        nlneg = lneg.reduce_to(op=np.sum)
+        print('lpos', nlpos, lpos)
+        print('lneg', nlneg, lneg)
+        # print('lunknown', lunknown)
+
+        # rpos = []
+        # rneg = []
+        # runknown = []
+        # for s in right:
+        #     pos_ss = self.pos_goal(s)
+        #     neg_ss = self.neg_goal(s)
+        #     if next((s for s in pos_ss), None):
+        #         rpos.append(s)
+        #     elif next((s for s in neg_ss), None):
+        #         rneg.append(s)
+        #     else:
+        #         runknown.append(s)
 
 
-        print('rpos', len(rpos), rpos)
-        print('rneg', len(rneg), rneg)
-        print('runknown', runknown)
+        rpos = self.pos_goal(right)
+        rneg = self.neg_goal(right)
 
-        lscore = self.gini_score(len(lpos), len(lneg))
-        rscore = self.gini_score(len(rpos), len(rneg))
+        nrpos = rpos.reduce_to(op=np.sum)
+        nrneg = rneg.reduce_to(op=np.sum)
+        print('rpos', nrpos, rpos)
+        print('rneg', nrneg, rneg)
+        # print('runknown', runknown)
+
+        lscore = self.gini_score(nlpos, nlneg)
+        rscore = self.gini_score(nrpos, nrneg)
         print('gini_scores', (lscore, rscore))
 
-        l = np.log((len(left)+1, len(right)+1))
+        l = np.log((nl+1, nr+1))
         if l.sum():
             w = l / l.sum()
             score = np.dot(w, (lscore, rscore))
@@ -262,12 +288,16 @@ class BoostingTreesModel:
         #     fact(Decision_Node_Example, self.rootid, ex)
 
         # pos = list(self.pos_rels[self.target](*self.target_args)({}))
-        pos = run(0, *self.target_args, self.pos_goal)
+        # pos = run(0, *self.target_args, self.pos_goal)
+        pos = self.pos_goal({}).reify(*self.target_args)
+        pos = list(pos)
         # print('pos',pos)
         # fact(Decision_Node_Positive, self.rootid, pos)
 
         # neg = list(self.neg_rels[self.target](*self.target_args)({}))
-        neg = run(0, *self.target_args, self.neg_goal)
+        # neg = run(0, *self.target_args, self.neg_goal)
+        neg = self.neg_goal({}).reify(*self.target_args)
+        neg = list(neg)
         # print('neg',neg)
         # fact(Decision_Node_Negative, self.rootid, neg)
 
