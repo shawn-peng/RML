@@ -77,11 +77,15 @@ class BoostingTreesModel:
     def _add_target_vars(self, arg_types):
         for guide, typename in arg_types:
             newvar = 'Var_' + typename + '_' + str(len(self.target_typed_vars[typename]))
-            newvar = TypedVar(VarType.get_type(typename), newvar)
+            # newvar = TypedVar(VarType.get_type(typename), newvar)
+            newvar = self._new_var(typename, newvar)
             self.target_typed_vars[typename].append(newvar)
 
     # def _add_var(self, typename, var, typed_vars):
     #     typed_vars[typename].append(var)
+    def _new_var(self, typename, newvar):
+        newvar = TypedVar(VarType.get_type(typename), newvar)
+        return newvar
 
     def _get_args(self, arg_types, typed_vars):
         arg_lists = []
@@ -91,7 +95,7 @@ class BoostingTreesModel:
                 arg_lists.append(exist_vars)
             elif guide == '-':
                 newvar = 'Var_' + typename + '_' + str(len(typed_vars[typename]))
-                newvar = var(newvar)
+                newvar = self._new_var(typename, newvar)
                 arg_lists.append([newvar])
             elif guide == '#':
                 values = self._collect_type_values(typename)
@@ -103,15 +107,16 @@ class BoostingTreesModel:
 
     type_value_collections = defaultdict(set)
     def _collect_type_values(self, typename):
-        if typename in self.type_value_collections:
-            return self.type_value_collections[typename]
-        collection = self.type_value_collections[typename]
-        for mode in self.modes:
-            rel, arg_types = mode
-            for argpos, (guide, tn) in enumerate(arg_types):
-                if tn == typename:
-                    collection.update(self.rels[rel].get_values(argpos))
-        return collection
+        return VarType.get_type(typename).get_values()
+        # if typename in self.type_value_collections:
+        #     return self.type_value_collections[typename]
+        # collection = self.type_value_collections[typename]
+        # for mode in self.modes:
+        #     rel, arg_types = mode
+        #     for argpos, (guide, tn) in enumerate(arg_types):
+        #         if tn == typename:
+        #             collection.update(self.rels[rel].get_values(argpos))
+        # return collection
 
     def get_examples(self, example_set, target):
         # x = var()
@@ -238,21 +243,28 @@ class BoostingTreesModel:
         # Tree_Leaf(node)
         # if not examples:
         #     examples = self.get_node_ex_subs(Decision_Node_Example, node)
-        pos = []
-        neg = []
-        unknown = []
-        for s in examples:
-            pos_ss = self.pos_goal(s)
-            neg_ss = self.neg_goal(s)
-            if next(pos_ss, None):
-                pos.append(s)
-            elif next(neg_ss, None):
-                neg.append(s)
-            else:
-                unknown.append(s)
 
-        npos = len(pos)
-        nneg = len(neg)
+        pos = self.pos_goal(examples)
+        neg = self.neg_goal(examples)
+
+        npos = pos.reduce_to(op=np.sum)
+        nneg = neg.reduce_to(op=np.sum)
+
+        # pos = []
+        # neg = []
+        # unknown = []
+        # for s in examples:
+        #     pos_ss = self.pos_goal(s)
+        #     neg_ss = self.neg_goal(s)
+        #     if next(pos_ss, None):
+        #         pos.append(s)
+        #     elif next(neg_ss, None):
+        #         neg.append(s)
+        #     else:
+        #         unknown.append(s)
+        #
+        # npos = len(pos)
+        # nneg = len(neg)
 
         total = (npos+nneg)
         if total:

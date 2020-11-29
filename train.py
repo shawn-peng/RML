@@ -10,8 +10,9 @@ from parse_modes import parse_modes
 from parse_type_def import parse_type_def
 
 from tensorkanren.types import VarType
+from tensorkanren.number_relations import gt, lt
 
-from numsys.number_relations import gt, lt
+# from numsys.number_relations import gt, lt
 
 from precomputing import *
 
@@ -37,6 +38,7 @@ class Config:
         print(var_types)
 
         self.var_types = []
+        # self.var_types.append(VarType('n', 'ordinal'))
         for t in var_types.items():
             print(t)
             self.var_types.append(VarType(*t))
