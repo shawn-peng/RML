@@ -1,0 +1,9 @@
+
+obj_id: id
+
+
+capshape: nominal
+capsurface: nominal
+capcolor: nominal
+bruises: nominal
+odor: nominal
