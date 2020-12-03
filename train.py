@@ -83,10 +83,10 @@ relations.update(common_rels)
 sys.path.append(proj_dir)
 
 if conf.precomputing:
-    precomp_rels = precompute(proj_dir + 'precomputes.py', relations)
+    precomp_rels = precompute(proj_dir + 'precomputes.py', conf.rel_types, relations)
     print('precomp rels', precomp_rels)
     print('rels', relations)
-    print('num smoking friends', relations['num_of_smoking_friends'].facts)
+    print('num smoking friends', relations['num_smoking_friends'].facts)
     # exit()
 
 # tree = learn_tree(relations, conf['target'], modes)

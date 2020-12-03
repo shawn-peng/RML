@@ -41,7 +41,7 @@ def _parse_args(argstr):
     return args
 
 
-mode_regex = '(\w+)\((' + modearg_regex + '(\s*,\s*' + modearg_regex + ')*)\)\.'
+mode_regex = '([\w-]+)\((' + modearg_regex + '(\s*,\s*' + modearg_regex + ')*)\)\.'
 mode_regex = re.compile(mode_regex)
 
 def _parse_mode(line):

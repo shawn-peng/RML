@@ -40,6 +40,9 @@ def parse_facts(factsfile, rel_types, fact_relations = None):
         rel, *args = fact
         # args = tuple(args)
         # print(args)
+        if rel not in rel_types:
+            print('skipping', rel, *args)
+            continue
         if rel not in fact_relations:
             fact_relations[rel] = Relation(rel_types[rel], rel)
         rel = fact_relations[rel]

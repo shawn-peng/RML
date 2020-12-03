@@ -13,6 +13,7 @@ from functools import partial
 import numpy as np
 import heapq
 import random
+import textwrap
 from graphviz import Digraph
 
 from typing import List
@@ -161,11 +162,13 @@ class BoostingTreesModel:
         left = g(examples)
         right = examples.filter(self.target_args, ~left.reduce_to(*self.target_args)) # right has fewer args because those args fail to unify
 
-        print('left', left)
-        print('right', right)
+        print('left', np.argwhere(left))
+        print('right', np.argwhere(right))
 
-        nl = left.reduce_to(op=np.sum)
-        nr = right.reduce_to(op=np.sum)
+        # nl = left.reduce_to(op=np.sum)
+        # nr = right.reduce_to(op=np.sum)
+        nl = left.count(*self.target_args)
+        nr = right.count(*self.target_args)
 
         # lpos = []
         # lneg = []
@@ -184,10 +187,14 @@ class BoostingTreesModel:
         lpos = self.pos_goal(left)
         lneg = self.neg_goal(left)
 
-        nlpos = lpos.reduce_to(op=np.sum)
-        nlneg = lneg.reduce_to(op=np.sum)
-        print('lpos', nlpos, lpos)
-        print('lneg', nlneg, lneg)
+        # nlpos = lpos.reduce_to(*self.target_args).sum()
+        # nlneg = lneg.reduce_to(*self.target_args).sum()
+        nlpos = lpos.count(*self.target_args)
+        nlneg = lneg.count(*self.target_args)
+        print('lpos', nlpos, np.argwhere(lpos))
+        print('lneg', nlneg, np.argwhere(lneg))
+        # print('lpos', nlpos, lpos)
+        # print('lneg', nlneg, lneg)
         # print('lunknown', lunknown)
 
         # rpos = []
@@ -207,10 +214,12 @@ class BoostingTreesModel:
         rpos = self.pos_goal(right)
         rneg = self.neg_goal(right)
 
-        nrpos = rpos.reduce_to(op=np.sum)
-        nrneg = rneg.reduce_to(op=np.sum)
-        print('rpos', nrpos, rpos)
-        print('rneg', nrneg, rneg)
+        nrpos = rpos.count(*self.target_args)
+        nrneg = rneg.count(*self.target_args)
+        print('rpos', nrpos, np.argwhere(rpos))
+        print('rneg', nrneg, np.argwhere(rneg))
+        # print('rpos', nrpos, rpos)
+        # print('rneg', nrneg, rneg)
         # print('runknown', runknown)
 
         lscore = self.gini_score(nlpos, nlneg)
@@ -359,7 +368,7 @@ class BoostingTreesModel:
                     elif s == best_score:
                         print('appending choice')
                         bests.append(choice)
-                    print(bests)
+                    print(np.argwhere(bests))
             # if not bests or bests[0][0] >= score:
             #     print('no valuable test')
             #     #set as leaf node
@@ -495,7 +504,8 @@ class BoostingTreesModel:
         print('t', t)
         t = t[0]
         # dot.node(node, str(t))
-        self.dot_node(dot, node, t)
+        # self.dot_node(dot, node, "%s:\n%s" % (str(t[0]), textwrap.indent('\n'.join(map(str, t[1])), '\t')))
+        self.dot_node(dot, node, "%s:\n%s" % (str(t[0]), textwrap.indent('\n'.join(map(str, t[1])), '\t')))
         l = var()
         l = run(1, l, Tree_Node_LChild(node, l))[0]
         if l:
