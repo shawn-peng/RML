@@ -11,6 +11,7 @@ from collections import defaultdict
 import itertools
 from functools import partial
 # import numpy as np
+import torch
 import heapq
 import random
 import textwrap
