@@ -3,7 +3,7 @@ from mykanren import run, eq, membero, var, conde
 from tensorkanren import Relation, facts
 
 import re
-import numpy as np
+# import numpy as np
 
 fact_regex = re.compile('(\w+)\((.*)\).')
 

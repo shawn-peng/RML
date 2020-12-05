@@ -10,7 +10,7 @@ from tensorkanren.types import VarType
 from collections import defaultdict
 import itertools
 from functools import partial
-import numpy as np
+# import numpy as np
 import heapq
 import random
 import textwrap
@@ -56,7 +56,7 @@ class BoostingTreesModel:
 
         self.pos_goal = self.pos_rels[self.target](*self.target_args)
         self.neg_goal = self.neg_rels[self.target](*self.target_args)
-
+        # print(self.target)
         self.pos_examples = self.get_examples(self.pos_rels, self.target)
         self.neg_examples = self.get_examples(self.neg_rels, self.target)
         self.examples = self.pos_examples | self.neg_examples
@@ -162,11 +162,11 @@ class BoostingTreesModel:
         left = g(examples)
         right = examples.filter(self.target_args, ~left.reduce_to(*self.target_args)) # right has fewer args because those args fail to unify
 
-        print('left', np.argwhere(left))
-        print('right', np.argwhere(right))
+        print('left', torch.argwhere(left))
+        print('right', torch.argwhere(right))
 
-        # nl = left.reduce_to(op=np.sum)
-        # nr = right.reduce_to(op=np.sum)
+        # nl = left.reduce_to(op=torch.sum)
+        # nr = right.reduce_to(op=torch.sum)
         nl = left.count(*self.target_args)
         nr = right.count(*self.target_args)
 
@@ -191,8 +191,8 @@ class BoostingTreesModel:
         # nlneg = lneg.reduce_to(*self.target_args).sum()
         nlpos = lpos.count(*self.target_args)
         nlneg = lneg.count(*self.target_args)
-        print('lpos', nlpos, np.argwhere(lpos))
-        print('lneg', nlneg, np.argwhere(lneg))
+        print('lpos', nlpos, torch.argwhere(lpos))
+        print('lneg', nlneg, torch.argwhere(lneg))
         # print('lpos', nlpos, lpos)
         # print('lneg', nlneg, lneg)
         # print('lunknown', lunknown)
@@ -216,8 +216,8 @@ class BoostingTreesModel:
 
         nrpos = rpos.count(*self.target_args)
         nrneg = rneg.count(*self.target_args)
-        print('rpos', nrpos, np.argwhere(rpos))
-        print('rneg', nrneg, np.argwhere(rneg))
+        print('rpos', nrpos, torch.argwhere(rpos))
+        print('rneg', nrneg, torch.argwhere(rneg))
         # print('rpos', nrpos, rpos)
         # print('rneg', nrneg, rneg)
         # print('runknown', runknown)
@@ -226,10 +226,10 @@ class BoostingTreesModel:
         rscore = self.gini_score(nrpos, nrneg)
         print('gini_scores', (lscore, rscore))
 
-        l = np.log((nl+1, nr+1))
+        l = torch.log((nl+1, nr+1))
         if l.sum():
             w = l / l.sum()
-            score = np.dot(w, (lscore, rscore))
+            score = torch.dot(w, (lscore, rscore))
         else:
             score = 1
         print('weighted avg score', score)
@@ -256,8 +256,8 @@ class BoostingTreesModel:
         pos = self.pos_goal(examples)
         neg = self.neg_goal(examples)
 
-        npos = pos.reduce_to(op=np.sum)
-        nneg = neg.reduce_to(op=np.sum)
+        npos = pos.reduce_to(op=torch.sum)
+        nneg = neg.reduce_to(op=torch.sum)
 
         # pos = []
         # neg = []
@@ -368,7 +368,7 @@ class BoostingTreesModel:
                     elif s == best_score:
                         print('appending choice')
                         bests.append(choice)
-                    print(np.argwhere(bests))
+                    print(torch.argwhere(bests))
             # if not bests or bests[0][0] >= score:
             #     print('no valuable test')
             #     #set as leaf node

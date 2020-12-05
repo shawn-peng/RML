@@ -1,6 +1,6 @@
 
 import os
-import numpy as np
+# import numpy as np
 # from mykanren import var, facts, Relation, run
 from tensorkanren import var, facts, Relation
 from tensorkanren.variable import TypedVar
@@ -44,7 +44,7 @@ def count_binding_set(args, goals):
     # return len(bs)
     args = tuple(args)
     sub = compose_goals(*goals)({})
-    bs = sub.reduce(*args, op=np.sum)
+    bs = sub.reduce(*args, op=torch.sum)
     return bs
 
 
@@ -72,7 +72,7 @@ def args_list_to_tensor(arg_types, args_list):
     ind = encode_args(arg_types, args_list)
     ind = tuple(zip(*ind))
     shape = list(map(lambda t: t.size(), arg_types))
-    res = np.ndarray(shape, np.bool)
+    res = torch.ndarray(shape, dtype=torch.bool)
     res[ind] = True
     return res
 
@@ -99,7 +99,7 @@ def func2facts(rel_func, rel_type, args, fact_rels):
     res_type = rel_type[-1]
     res_type.fit(res)
 
-    for ind in np.argwhere(res):
+    for ind in torch.argwhere(res):
         rel.add_fact(*decode_args(arg_types, ind), *res[ind])
 
     # res_var = TypedVar(res_type, 'res')

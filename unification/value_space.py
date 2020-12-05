@@ -1,4 +1,4 @@
-import numpy as np
+# import numpy as np
 
 #from number_relations import *
 
@@ -27,7 +27,7 @@ class IntSet(DiscreteSet):
         pass
 
 class RealSimpleRange(ValueSet):
-    def __init__(self, lo=-np.inf, hi=np.inf):
+    def __init__(self, lo=-float('-inf'), hi=float('inf')):
         super().__init__()
         self.lo = lo
         # self.includelo = includelo
@@ -64,7 +64,7 @@ class RealSimpleRange(ValueSet):
 
 
 class RealRange(ValueSet):
-    # def __init__(self, lo=-np.inf, hi=np.inf, includelo=True, includehi=False):
+    # def __init__(self, lo=-torch.inf, hi=torch.inf, includelo=True, includehi=False):
     def __init__(self, itv_list=None):
         super().__init__()
         if itv_list is None:
@@ -125,15 +125,15 @@ class RealRange(ValueSet):
         n = len(itv)
         ret = RealRange([])
 
-        start = -np.inf
+        start = -torch.inf
 
         new_itv = ret.intervals
         for a in itv:
             if a.lo > start:
                 new_itv.append(RealSimpleRange(start, a.lo))
             start = a.hi
-        if np.inf > start:
-            new_itv.append(RealSimpleRange(start, np.inf))
+        if torch.inf > start:
+            new_itv.append(RealSimpleRange(start, torch.inf))
 
         return ret
 

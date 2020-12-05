@@ -1,12 +1,16 @@
 // The Decision Tree
 digraph {
-	"iris_setosa.tree_1.node_1" [label="(<Rel: pw>, (~Var_obj_id_0, ~Var_n_0))"]
+	"iris_setosa.tree_1.node_1" [label="<Rel: sw>:
+	TypedVar: Var_obj_id_0(<id>obj_id)
+	TypedVar: Var_n_0(<ordinal>n)"]
 	"iris_setosa.tree_1.node_1" -> "iris_setosa.tree_1.node_2"
-	"iris_setosa.tree_1.node_2" [label="(<Rel: gt>, (~Var_n_0, 3))"]
+	"iris_setosa.tree_1.node_2" [label="<Rel: gt>:
+	TypedVar: Var_n_0(<ordinal>n)
+	6"]
 	"iris_setosa.tree_1.node_2" -> "iris_setosa.tree_1.node_4"
-	"iris_setosa.tree_1.node_4" [label="0.000: False"]
+	"iris_setosa.tree_1.node_4" [label="0.875: True"]
 	"iris_setosa.tree_1.node_2" -> "iris_setosa.tree_1.node_5"
-	"iris_setosa.tree_1.node_5" [label="1.000: True"]
+	"iris_setosa.tree_1.node_5" [label="0.217: False"]
 	"iris_setosa.tree_1.node_1" -> "iris_setosa.tree_1.node_3"
 	"iris_setosa.tree_1.node_3" [label="0.500: False"]
 }
