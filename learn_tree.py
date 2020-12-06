@@ -4,13 +4,17 @@ from dt import Tree_Root, Tree_Leaf, Tree_Node_Child, Tree_Node_LChild, Tree_Nod
     Decision_Node_Example, Decision_Node_Positive, Decision_Node_Negative
 
 from mykanren import var, Relation, run, fact, facts, lall, lany, reify, Stream
+from tensorkanren.variable import TypedVar
+from tensorkanren.types import VarType
 
 from collections import defaultdict
 import itertools
 from functools import partial
-import numpy as np
+# import numpy as np
+import tensorflow as tf
 import heapq
 import random
+import textwrap
 from graphviz import Digraph
 
 from typing import List
@@ -46,7 +50,7 @@ class BoostingTreesModel:
                 self._add_target_vars(arg_types)
                 # self.target_argtypes = (typename for guide, typename in arg_types)
                 self.target_argtypes = arg_types
-                del mode
+                del mode # remove target mode
                 self.target_args = next(self._get_args(arg_types, self.target_typed_vars))
                 print('target_args', (self.target_args))
                 break
@@ -54,8 +58,10 @@ class BoostingTreesModel:
         self.pos_goal = self.pos_rels[self.target](*self.target_args)
         self.neg_goal = self.neg_rels[self.target](*self.target_args)
 
-        self.examples = self.get_examples(self.pos_rels, self.target)
-        self.examples += self.get_examples(self.neg_rels, self.target)
+        self.pos_examples = self.get_examples(self.pos_rels, self.target)
+        self.neg_examples = self.get_examples(self.neg_rels, self.target)
+        self.examples = self.pos_examples | self.neg_examples
+        # self.examples = self.get_all_examples() # substitution for all examples
         print('examples', self.examples)
 
     tree_counts = defaultdict(int)
@@ -73,11 +79,15 @@ class BoostingTreesModel:
     def _add_target_vars(self, arg_types):
         for guide, typename in arg_types:
             newvar = 'Var_' + typename + '_' + str(len(self.target_typed_vars[typename]))
-            newvar = var(newvar)
+            # newvar = TypedVar(VarType.get_type(typename), newvar)
+            newvar = self._new_var(typename, newvar)
             self.target_typed_vars[typename].append(newvar)
 
     # def _add_var(self, typename, var, typed_vars):
     #     typed_vars[typename].append(var)
+    def _new_var(self, typename, newvar):
+        newvar = TypedVar(VarType.get_type(typename), newvar)
+        return newvar
 
     def _get_args(self, arg_types, typed_vars):
         arg_lists = []
@@ -87,7 +97,7 @@ class BoostingTreesModel:
                 arg_lists.append(exist_vars)
             elif guide == '-':
                 newvar = 'Var_' + typename + '_' + str(len(typed_vars[typename]))
-                newvar = var(newvar)
+                newvar = self._new_var(typename, newvar)
                 arg_lists.append([newvar])
             elif guide == '#':
                 values = self._collect_type_values(typename)
@@ -99,22 +109,29 @@ class BoostingTreesModel:
 
     type_value_collections = defaultdict(set)
     def _collect_type_values(self, typename):
-        if typename in self.type_value_collections:
-            return self.type_value_collections[typename]
-        collection = self.type_value_collections[typename]
-        for mode in self.modes:
-            rel, arg_types = mode
-            for argpos, (guide, tn) in enumerate(arg_types):
-                if tn == typename:
-                    collection.update(self.rels[rel].get_values(argpos))
-        return collection
+        return VarType.get_type(typename).get_values()
+        # if typename in self.type_value_collections:
+        #     return self.type_value_collections[typename]
+        # collection = self.type_value_collections[typename]
+        # for mode in self.modes:
+        #     rel, arg_types = mode
+        #     for argpos, (guide, tn) in enumerate(arg_types):
+        #         if tn == typename:
+        #             collection.update(self.rels[rel].get_values(argpos))
+        # return collection
 
     def get_examples(self, example_set, target):
         # x = var()
         # l = run(0, x, example_set[target](x))
         # return l
         g = example_set[target](*self.target_args)
-        return list(g({}))
+        exsub = g({})
+        ex = exsub.get_var_values(*self.target_args)
+        print(ex)
+        return exsub
+
+    # def get_all_examples(self):
+    #     g =
 
     # def get_node_examples(self, node):
     #     x = var()
@@ -137,59 +154,83 @@ class BoostingTreesModel:
         #examples = run(1, examples, Decision_Node_Example(node, examples))[0]
 
         g = rel(*args)
-        for s in examples:
-            newss = Stream(g(s))
-            if not newss.empty():
-                left.append(next(newss))
-            else:
-                right.append(s)
+        # for s in examples:
+        #     newss = Stream(g(s))
+        #     if not newss.empty():
+        #         left.append(next(newss))
+        #     else:
+        #         right.append(s)
+        left = g(examples)
+        right = examples.filter(self.target_args, ~left.reduce_to(*self.target_args)) # right has fewer args because those args fail to unify
 
-        print('left', left)
-        print('right', right)
+        print('left', tf.argwhere(left))
+        print('right', tf.argwhere(right))
 
-        lpos = []
-        lneg = []
-        lunknown = []
-        for s in left:
-            pos_ss = self.pos_goal(s)
-            neg_ss = self.neg_goal(s)
-            if next(pos_ss, None):
-                lpos.append(s)
-            elif next(neg_ss, None):
-                lneg.append(s)
-            else:
-                lunknown.append(s)
+        # nl = left.reduce_to(op=tf.sum)
+        # nr = right.reduce_to(op=tf.sum)
+        nl = left.count(*self.target_args)
+        nr = right.count(*self.target_args)
 
-        print('lpos', len(lpos), lpos)
-        print('lneg', len(lneg), lneg)
-        print('lunknown', lunknown)
+        # lpos = []
+        # lneg = []
+        # lunknown = []
+        #
+        # for s in left:
+        #     pos_ss = self.pos_goal(s)
+        #     neg_ss = self.neg_goal(s)
+        #     if next(pos_ss, None):
+        #         lpos.append(s)
+        #     elif next(neg_ss, None):
+        #         lneg.append(s)
+        #     else:
+        #         lunknown.append(s)
 
-        rpos = []
-        rneg = []
-        runknown = []
-        for s in right:
-            pos_ss = self.pos_goal(s)
-            neg_ss = self.neg_goal(s)
-            if next((s for s in pos_ss), None):
-                rpos.append(s)
-            elif next((s for s in neg_ss), None):
-                rneg.append(s)
-            else:
-                runknown.append(s)
+        lpos = self.pos_goal(left)
+        lneg = self.neg_goal(left)
+
+        # nlpos = lpos.reduce_to(*self.target_args).sum()
+        # nlneg = lneg.reduce_to(*self.target_args).sum()
+        nlpos = lpos.count(*self.target_args)
+        nlneg = lneg.count(*self.target_args)
+        print('lpos', nlpos, tf.argwhere(lpos))
+        print('lneg', nlneg, tf.argwhere(lneg))
+        # print('lpos', nlpos, lpos)
+        # print('lneg', nlneg, lneg)
+        # print('lunknown', lunknown)
+
+        # rpos = []
+        # rneg = []
+        # runknown = []
+        # for s in right:
+        #     pos_ss = self.pos_goal(s)
+        #     neg_ss = self.neg_goal(s)
+        #     if next((s for s in pos_ss), None):
+        #         rpos.append(s)
+        #     elif next((s for s in neg_ss), None):
+        #         rneg.append(s)
+        #     else:
+        #         runknown.append(s)
 
 
-        print('rpos', len(rpos), rpos)
-        print('rneg', len(rneg), rneg)
-        print('runknown', runknown)
+        rpos = self.pos_goal(right)
+        rneg = self.neg_goal(right)
 
-        lscore = self.gini_score(len(lpos), len(lneg))
-        rscore = self.gini_score(len(rpos), len(rneg))
+        nrpos = rpos.count(*self.target_args)
+        nrneg = rneg.count(*self.target_args)
+        print('rpos', nrpos, tf.argwhere(rpos))
+        print('rneg', nrneg, tf.argwhere(rneg))
+        # print('rpos', nrpos, rpos)
+        # print('rneg', nrneg, rneg)
+        # print('runknown', runknown)
+
+        lscore = self.gini_score(nlpos, nlneg)
+        rscore = self.gini_score(nrpos, nrneg)
         print('gini_scores', (lscore, rscore))
 
-        l = np.log((len(left)+1, len(right)+1))
+        l = tf.log((nl+1, nr+1))
         if l.sum():
             w = l / l.sum()
-            score = np.dot(w, (lscore, rscore))
+            score = tf.dot(w, (lscore, rscore))
         else:
             score = 1
         print('weighted avg score', score)
@@ -212,21 +253,28 @@ class BoostingTreesModel:
         # Tree_Leaf(node)
         # if not examples:
         #     examples = self.get_node_ex_subs(Decision_Node_Example, node)
-        pos = []
-        neg = []
-        unknown = []
-        for s in examples:
-            pos_ss = self.pos_goal(s)
-            neg_ss = self.neg_goal(s)
-            if next(pos_ss, None):
-                pos.append(s)
-            elif next(neg_ss, None):
-                neg.append(s)
-            else:
-                unknown.append(s)
 
-        npos = len(pos)
-        nneg = len(neg)
+        pos = self.pos_goal(examples)
+        neg = self.neg_goal(examples)
+
+        npos = pos.reduce_to(op=tf.sum)
+        nneg = neg.reduce_to(op=tf.sum)
+
+        # pos = []
+        # neg = []
+        # unknown = []
+        # for s in examples:
+        #     pos_ss = self.pos_goal(s)
+        #     neg_ss = self.neg_goal(s)
+        #     if next(pos_ss, None):
+        #         pos.append(s)
+        #     elif next(neg_ss, None):
+        #         neg.append(s)
+        #     else:
+        #         unknown.append(s)
+        #
+        # npos = len(pos)
+        # nneg = len(neg)
 
         total = (npos+nneg)
         if total:
@@ -262,12 +310,16 @@ class BoostingTreesModel:
         #     fact(Decision_Node_Example, self.rootid, ex)
 
         # pos = list(self.pos_rels[self.target](*self.target_args)({}))
-        pos = run(0, *self.target_args, self.pos_goal)
+        # pos = run(0, *self.target_args, self.pos_goal)
+        pos = self.pos_goal({}).reify(*self.target_args)
+        pos = list(pos)
         # print('pos',pos)
         # fact(Decision_Node_Positive, self.rootid, pos)
 
         # neg = list(self.neg_rels[self.target](*self.target_args)({}))
-        neg = run(0, *self.target_args, self.neg_goal)
+        # neg = run(0, *self.target_args, self.neg_goal)
+        neg = self.neg_goal({}).reify(*self.target_args)
+        neg = list(neg)
         # print('neg',neg)
         # fact(Decision_Node_Negative, self.rootid, neg)
 
@@ -317,7 +369,7 @@ class BoostingTreesModel:
                     elif s == best_score:
                         print('appending choice')
                         bests.append(choice)
-                    print(bests)
+                    print(tf.argwhere(bests))
             # if not bests or bests[0][0] >= score:
             #     print('no valuable test')
             #     #set as leaf node
@@ -453,7 +505,8 @@ class BoostingTreesModel:
         print('t', t)
         t = t[0]
         # dot.node(node, str(t))
-        self.dot_node(dot, node, t)
+        # self.dot_node(dot, node, "%s:\n%s" % (str(t[0]), textwrap.indent('\n'.join(map(str, t[1])), '\t')))
+        self.dot_node(dot, node, "%s:\n%s" % (str(t[0]), textwrap.indent('\n'.join(map(str, t[1])), '\t')))
         l = var()
         l = run(1, l, Tree_Node_LChild(node, l))[0]
         if l:

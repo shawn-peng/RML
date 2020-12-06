@@ -1,0 +1,5 @@
+{
+  "proj_dir": "data/mushroom/",
+  "target": "poisonous",
+  "num_splits": 4
+}

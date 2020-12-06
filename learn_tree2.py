@@ -8,7 +8,8 @@ from mykanren import var, Relation, run, fact, facts, lall, lany, reify, Stream
 from collections import defaultdict
 import itertools
 from functools import partial
-import numpy as np
+# import numpy as np
+import tensorflow as tf
 import heapq
 import random
 from graphviz import Digraph

@@ -1,15 +1,35 @@
-import numpy as np
-
+# import numpy as np
+import tensorflow as tf
+import math
 #from number_relations import *
 
-class Anything:
-    pass
+class ValueSet:
+    def __init__(self):
+        pass
 
-class Everything:
-    pass
+class DiscreteSet(ValueSet):
+    def __init__(self):
+        super().__init__()
+        pass
 
-class RealSimpleRange:
-    def __init__(self, lo=-np.inf, hi=np.inf):
+class CategorySet(DiscreteSet):
+    def __init__(self):
+        super().__init__()
+        pass
+
+class IDSet(DiscreteSet):
+    def __init__(self):
+        super().__init__()
+        pass
+
+class IntSet(DiscreteSet):
+    def __init__(self):
+        super().__init__()
+        pass
+
+class RealSimpleRange(ValueSet):
+    def __init__(self, lo=-math.inf, hi=math.inf):
+        super().__init__()
         self.lo = lo
         # self.includelo = includelo
         self.hi = hi
@@ -44,12 +64,10 @@ class RealSimpleRange:
     __repr__ = __str__
 
 
-
-
-
-class RealRange:
-    # def __init__(self, lo=-np.inf, hi=np.inf, includelo=True, includehi=False):
+class RealRange(ValueSet):
+    # def __init__(self, lo=-math.inf, hi=math.inf, includelo=True, includehi=False):
     def __init__(self, itv_list=None):
+        super().__init__()
         if itv_list is None:
             self.intervals = [RealSimpleRange()]
             return
@@ -108,15 +126,15 @@ class RealRange:
         n = len(itv)
         ret = RealRange([])
 
-        start = -np.inf
+        start = -math.inf
 
         new_itv = ret.intervals
         for a in itv:
             if a.lo > start:
                 new_itv.append(RealSimpleRange(start, a.lo))
             start = a.hi
-        if np.inf > start:
-            new_itv.append(RealSimpleRange(start, np.inf))
+        if math.inf > start:
+            new_itv.append(RealSimpleRange(start, math.inf))
 
         return ret
 

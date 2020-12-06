@@ -8,4 +8,4 @@ cancer(+Person).
 
 gt(+n, #n).
 
-num_of_smoking_friends(+Person, -n).
+num_smoking_friends(+Person, -n).

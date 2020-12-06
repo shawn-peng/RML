@@ -1,6 +1,6 @@
 iris_setosa(+obj_id).
-// iris_versicolor(+obj_id).
-// iris_virginica(+obj_id).
+iris_versicolor(+obj_id).
+iris_virginica(+obj_id).
 
 sl(+obj_id, -n).
 sw(+obj_id, -n).

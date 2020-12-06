@@ -14,7 +14,8 @@ from toolz import merge
 
 import numbers
 from numbers import Number
-import numpy as np
+# import numpy as np
+import tensorflow as tf
 
 _Number = Relation()
 class RegisteringRelation(Relation):
@@ -119,14 +120,14 @@ def _gt(x, y):
                 raise EarlyGoalError('two vars in comparison')
             elif isinstance(newy, Number):
                 oldvar = newx
-                newvar = RangedVar(RealRange([(newy, np.inf)]))
+                newvar = RangedVar(RealRange([(newy, math.inf)]))
                 yield from apply_constrain(oldvar, newvar)
             else:
                 raise EarlyGoalError('Invalid constant type')
         elif isinstance(newx, Number):
             if isvar(newy):
                 oldvar = newy
-                newvar = RangedVar(RealRange([(-np.inf, newx)]))
+                newvar = RangedVar(RealRange([(-math.inf, newx)]))
                 yield from apply_constrain(oldvar, newvar)
             elif isinstance(newy, Number):
                 if newx > newy:
@@ -160,14 +161,14 @@ def _lt(x, y):
                 raise EarlyGoalError('two vars in comparison')
             elif isinstance(newy, Number):
                 oldvar = newx
-                newvar = RangedVar(RealRange([(newy, np.inf)]))
+                newvar = RangedVar(RealRange([(newy, math.inf)]))
                 yield from apply_constrain(oldvar, newvar)
             else:
                 raise EarlyGoalError('Invalid constant type')
         elif isinstance(newx, Number):
             if isvar(newy):
                 oldvar = newy
-                newvar = RangedVar(RealRange([(-np.inf, newx)]))
+                newvar = RangedVar(RealRange([(-math.inf, newx)]))
                 yield from apply_constrain(oldvar, newvar)
             elif isinstance(newy, Number):
                 if newx < newy:
@@ -185,10 +186,10 @@ ge = gt
 
 le = lt
 
-# gt = BypassingRelation(np.greater)
-# ge = BypassingRelation(np.greater_equal)
-# lt = BypassingRelation(np.less)
-# le = BypassingRelation(np.less_equal)
+# gt = BypassingRelation(tf.greater)
+# ge = BypassingRelation(tf.greater_equal)
+# lt = BypassingRelation(tf.less)
+# le = BypassingRelation(tf.less_equal)
 
 # complimentary = Relation()
 # facts(complimentary,
