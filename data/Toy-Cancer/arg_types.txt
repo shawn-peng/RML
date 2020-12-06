@@ -1,0 +1,11 @@
+
+friends(Person, Person)
+smokes(Person)
+cancer(Person)
+
+
+gt(n, n)
+lt(n, n)
+
+// precomputed
+num_smoking_friends(Person, n)

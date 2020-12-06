@@ -1,0 +1,8 @@
+
+poisonous(obj_id)
+
+cap_shape(obj_id, capshape)
+cap_surface(obj_id, capsurface)
+cap_color(obj_id, capcolor)
+bruises(obj_id, bruises)
+odor(obj_id, odor)
