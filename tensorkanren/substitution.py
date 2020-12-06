@@ -3,7 +3,7 @@ from temp_dict import temp_dict
 
 from collections import defaultdict
 from itertools import starmap
-# import numpy as np
+import numpy as np
 import tensorflow as tf
 
 from .variable import Var, TypedVar, VarType
@@ -104,14 +104,14 @@ class Substitution(temp_dict):
         # for i in range(newdim):
         #     if i not in dims:
         #         s1.append(i)
-        s1flags = tf.ones(newdim, tf.bool)
+        s1flags = np.ones(newdim, np.bool)
         s1flags[dims] = 0
         #newdims = tf.arange(ndim1)
-        exp_dims = tf.arange(newdim)
+        exp_dims = np.arange(newdim)
         exp_dims = list(exp_dims[s1flags])
-        rel_tensor = rel_tensor.transpose(dims_sort_ind) #order
+        rel_tensor = tf.sparse.transpose(rel_tensor, dims_sort_ind) #order
         if exp_dims:
-            rel_tensor = tf.expand_dims(rel_tensor, exp_dims) #align
+            rel_tensor = tf.sparse.expand_dims(rel_tensor, exp_dims) #align
 
         newsub.result = newsub.result * rel_tensor # broadcasting other dimensions
 

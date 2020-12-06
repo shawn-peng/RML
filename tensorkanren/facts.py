@@ -140,15 +140,20 @@ class Relation(object):
             nonlocal args
             nargs = len(args)
             varargs = []
-            ind = [slice(None)] * nargs
+            # ind = [slice(None)] * nargs
+            start_ind = [0] *  nargs
+            slice_len = [-1] * nargs
             for i, arg in enumerate(args):
                 if isvar(arg):
                     varargs.append(arg)
                 else:
-                    ind[i] = self.arg_types[i].encode(arg)
-            ind = tuple(ind)
+                    # ind[i] = self.arg_types[i].encode(arg)
+                    start_ind[i] = self.arg_types[i].encode(arg)
+                    slice_len[i] = 1
+            # ind = tuple(ind)
 
-            newsub = sub.unify(self.facts_tensor[ind], *varargs)
+            # newsub = sub.unify(self.facts_tensor[ind], *varargs)
+            newsub = sub.unify(tf.sparse.slice(self.facts_tensor, start_ind, slice_len), *varargs)
             # for arg in reversed(args2):
             #     if isvar(arg):
             #         #m = sub.reify_last_var(arg)
