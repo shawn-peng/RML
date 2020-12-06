@@ -16,7 +16,7 @@ from collections import defaultdict
 #         if isinstance(it, tuple):
 
 
-relation_facts_tensor = tf.SparseTensor
+relation_facts_tensor = tf.sparse.SparseTensor
 
 class Relation(object):
     _id = 0
@@ -72,10 +72,13 @@ class Relation(object):
 
         print(self.facts)
         # self.facts_tensor = tf.array(list(self.facts))
-        self.facts_tensor = tf.zeros(shape, tf.bool)
+        # self.facts_tensor = tf.zeros(shape, tf.bool)
+        tmp = list()
         for fact in self.facts:
             ind = self.encode_fact(*fact)
-            self.facts_tensor[ind] = True
+            tmp.append(ind)
+            # self.facts_tensor[ind] = True
+        self.facts_tensor = tf.sparse.SparseTensor(indices = tmp, values=[True]*len(tmp), dense_shape=shape)
 
     def get_values(self, argpos):
         # if argpos >= len(self.value_collections):

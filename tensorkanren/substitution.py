@@ -18,7 +18,7 @@ class Substitution(temp_dict):
     def __init__(self, d: dict):
         super(Substitution, self).__init__(d)
         # self.result = np.array([1], tf.bool)
-        self.result = tf.SparseTensor
+        self.result = tf.sparse.SparseTensor(indices=[[0]],values=[True], dense_shape=[1])
         self.var_indices = defaultdict(lambda: len(self.var_indices))
         if isinstance(d, Substitution):
             self.result = d.result
